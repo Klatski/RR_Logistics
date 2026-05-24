@@ -5,58 +5,64 @@ import { requireAuth, requireAdmin } from '../auth.js';
 const router = Router();
 router.use(requireAuth, requireAdmin);
 
-router.get('/', (req, res) => {
-  const { from, to } = req.query;
+router.get('/', async (req, res) => {
+  try {
+    const { from, to } = req.query;
 
-  const totalCars = db.prepare('SELECT COUNT(*) AS c FROM cars').get().c;
-  const activeTrips = db
-    .prepare("SELECT COUNT(*) AS c FROM trips WHERE status = 'active'")
-    .get().c;
+    const { rows: carsRows }  = await db.query('SELECT COUNT(*) AS c FROM cars');
+    const { rows: activeRows } = await db.query(
+      "SELECT COUNT(*) AS c FROM trips WHERE status = 'active'"
+    );
 
-  let distanceSql = "SELECT COALESCE(SUM(distance),0) AS d FROM trips WHERE status = 'completed'";
-  let fuelSql = 'SELECT COALESCE(SUM(amount),0) AS amount FROM refuels WHERE 1=1';
-  const dParams = [];
-  const fParams = [];
+    const dParams = [];
+    const fParams = [];
+    let distanceSql = "SELECT COALESCE(SUM(distance),0) AS d FROM trips WHERE status = 'completed'";
+    let fuelSql     = 'SELECT COALESCE(SUM(amount),0) AS amount FROM refuels WHERE 1=1';
 
-  if (from || to) {
-    if (from) {
-      distanceSql += ' AND date(end_time) >= date(?)'; dParams.push(from);
-      fuelSql += ' AND date(created_at) >= date(?)'; fParams.push(from);
+    if (from || to) {
+      if (from) {
+        dParams.push(from);
+        distanceSql += ` AND end_time::date >= $${dParams.length}::date`;
+        fParams.push(from);
+        fuelSql     += ` AND created_at::date >= $${fParams.length}::date`;
+      }
+      if (to) {
+        dParams.push(to);
+        distanceSql += ` AND end_time::date <= $${dParams.length}::date`;
+        fParams.push(to);
+        fuelSql     += ` AND created_at::date <= $${fParams.length}::date`;
+      }
+    } else {
+      distanceSql += " AND end_time >= date_trunc('month', NOW())";
+      fuelSql     += " AND created_at >= date_trunc('month', NOW())";
     }
-    if (to) {
-      distanceSql += ' AND date(end_time) <= date(?)'; dParams.push(to);
-      fuelSql += ' AND date(created_at) <= date(?)'; fParams.push(to);
-    }
-  } else {
-    distanceSql += " AND datetime(end_time) >= datetime('now','start of month')";
-    fuelSql += " AND datetime(created_at) >= datetime('now','start of month')";
-  }
 
-  const monthDistance = db.prepare(distanceSql).get(...dParams).d;
-  const monthFuel = db.prepare(fuelSql).get(...fParams).amount;
+    const { rows: distRows } = await db.query(distanceSql, dParams);
+    const { rows: fuelRows } = await db.query(fuelSql, fParams);
 
-  const lastTrips = db
-    .prepare(`
+    const { rows: lastTrips } = await db.query(`
       SELECT t.id, t.start_time, t.end_time, t.distance, t.status,
         u.name AS driver_name,
         c.name AS car_name, c.plate_number
       FROM trips t
       JOIN users u ON u.id = t.driver_id
-      JOIN cars c ON c.id = t.car_id
-      ORDER BY datetime(t.start_time) DESC
+      JOIN cars  c ON c.id = t.car_id
+      ORDER BY t.start_time DESC
       LIMIT 5
-    `)
-    .all();
+    `);
 
-  res.json({
-    metrics: {
-      totalCars,
-      activeTrips,
-      monthDistance,
-      monthFuel,
-    },
-    lastTrips,
-  });
+    res.json({
+      metrics: {
+        totalCars:     parseInt(carsRows[0].c),
+        activeTrips:   parseInt(activeRows[0].c),
+        monthDistance: parseInt(distRows[0].d),
+        monthFuel:     parseFloat(fuelRows[0].amount),
+      },
+      lastTrips,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 export default router;

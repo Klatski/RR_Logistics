@@ -1,26 +1,22 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'node:path';
-import fs from 'node:fs';
 import crypto from 'node:crypto';
-import { UPLOADS_DIR } from '../config.js';
+import path from 'node:path';
+import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '../auth.js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+const BUCKET = 'uploads';
 
 const router = Router();
 
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, UPLOADS_DIR);
-  },
-  filename(req, file, cb) {
-    const ext = path.extname(file.originalname || '') || '.jpg';
-    const id = crypto.randomBytes(8).toString('hex');
-    cb(null, `${Date.now()}-${id}${ext.toLowerCase()}`);
-  },
-});
-
+// multer хранит файл в памяти (не на диске)
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter(req, file, cb) {
     if (!/^image\//.test(file.mimetype)) {
@@ -30,17 +26,40 @@ const upload = multer({
   },
 });
 
-router.post('/', requireAuth, upload.single('photo'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'Файл не получен' });
-  const url = `/uploads/${req.file.filename}`;
-  res.json({ url });
+router.post('/', requireAuth, upload.single('photo'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Файл не получен' });
+
+    const ext      = path.extname(req.file.originalname || '') || '.jpg';
+    const filename = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext.toLowerCase()}`;
+
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .upload(filename, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false,
+      });
+
+    if (error) {
+      console.error('[upload] Supabase error:', error.message);
+      return res.status(500).json({ error: 'Ошибка загрузки файла' });
+    }
+
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(filename);
+    res.json({ url: data.publicUrl });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-router.delete('/:filename', requireAuth, (req, res) => {
-  const safe = path.basename(req.params.filename);
-  const fp = path.join(UPLOADS_DIR, safe);
-  if (fs.existsSync(fp)) fs.unlinkSync(fp);
-  res.json({ ok: true });
+router.delete('/:filename', requireAuth, async (req, res) => {
+  try {
+    const safe = path.basename(req.params.filename);
+    await supabase.storage.from(BUCKET).remove([safe]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 export default router;

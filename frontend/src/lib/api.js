@@ -1,7 +1,7 @@
 const TOKEN_KEY = 'rr_token';
 const USER_KEY = 'rr_user';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
