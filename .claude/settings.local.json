@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(python -c \"from PIL import Image; print\\('ok'\\)\")",
+      "Bash(pip install *)",
+      "Bash(mkdir -p icons)",
+      "Bash(python)",
+      "Bash(npm run *)",
+      "Bash(node src/server.js)",
+      "Bash(curl -s http://localhost:4000/api/health)",
+      "Bash(curl -s -X POST http://localhost:4000/api/auth/login -H \"Content-Type: application/json; charset=utf-8\" -d '{\"login\":\"ivan\",\"password\":\"test123\"}')",
+      "Bash(python -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(curl -s http://localhost:5174)",
+      "Bash(curl -s -I http://localhost:5174/)",
+      "Bash(curl -s http://localhost:5174/manifest.webmanifest)",
+      "Bash(curl -s -o /dev/null -w \"sw.js: %{http_code}\\\\n\" http://localhost:5174/sw.js)",
+      "Bash(curl -s -o /dev/null -w \"icon-192: %{http_code}\\\\n\" http://localhost:5174/icons/icon-192.png)",
+      "Bash(curl -s -o /dev/null -w \"icon-512: %{http_code}\\\\n\" http://localhost:5174/icons/icon-512.png)",
+      "Bash(powershell *)"
+    ]
+  }
+}
