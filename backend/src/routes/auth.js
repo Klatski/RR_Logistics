@@ -46,7 +46,7 @@ router.get('/me', requireAuth, async (req, res) => {
 
 router.put('/profile', requireAuth, async (req, res) => {
   try {
-    const { name, current_password, new_password, avatar_url } = req.body || {};
+    const { name, login, phone, current_password, new_password, avatar_url } = req.body || {};
     const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
     const user = rows[0];
     if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
@@ -64,10 +64,27 @@ router.put('/profile', requireAuth, async (req, res) => {
       await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, user.id]);
     }
 
+    let newLogin = user.login;
+    if (login !== undefined && String(login).trim() && String(login).trim().toLowerCase() !== user.login) {
+      newLogin = String(login).trim().toLowerCase();
+      if (!/^[a-z0-9_.-]{3,32}$/.test(newLogin)) {
+        return res.status(400).json({ error: 'Логин: 3–32 символа, латиница/цифры/._-' });
+      }
+      const { rows: dupRows } = await db.query(
+        'SELECT id FROM users WHERE login = $1 AND id <> $2',
+        [newLogin, user.id]
+      );
+      if (dupRows.length > 0) {
+        return res.status(409).json({ error: 'Логин уже занят' });
+      }
+    }
+
     await db.query(
-      'UPDATE users SET name = $1, avatar_url = $2 WHERE id = $3',
+      'UPDATE users SET name = $1, login = $2, phone = $3, avatar_url = $4 WHERE id = $5',
       [
         name ? String(name).trim() : user.name,
+        newLogin,
+        phone !== undefined ? (String(phone).trim() || null) : user.phone,
         avatar_url !== undefined ? (avatar_url || null) : user.avatar_url,
         user.id,
       ]

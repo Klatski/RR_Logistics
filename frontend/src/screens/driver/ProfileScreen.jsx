@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast.jsx';
 import { api } from '../../lib/api.js';
 import { compressImage } from '../../lib/photo.js';
 import NetworkBar from '../../components/NetworkBar.jsx';
+import Modal from '../../components/Modal.jsx';
 
 function Avatar({ url, name, size = 88 }) {
   const initials = name
@@ -54,6 +55,7 @@ export default function ProfileScreen() {
   const [savingPwd, setSavingPwd] = useState(false);
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   async function handleAvatarFile(e) {
     const file = e.target.files?.[0];
@@ -107,6 +109,11 @@ export default function ProfileScreen() {
   function handleLogout() {
     logout();
     navigate('/login', { replace: true });
+  }
+
+  function confirmAndLogout() {
+    setConfirmLogout(false);
+    handleLogout();
   }
 
   return (
@@ -241,10 +248,26 @@ export default function ProfileScreen() {
         </div>
 
         {/* Выход */}
-        <button className="btn btn--secondary btn--full" onClick={handleLogout} style={{ marginTop: 4 }}>
+        <button className="btn btn--secondary btn--full" onClick={() => setConfirmLogout(true)} style={{ marginTop: 4 }}>
           <Icon name="logout" size={18} />
           Выйти из аккаунта
         </button>
+
+        <Modal
+          open={confirmLogout}
+          onClose={() => setConfirmLogout(false)}
+          title="Выйти из аккаунта?"
+          footer={
+            <>
+              <button className="btn btn--ghost" onClick={() => setConfirmLogout(false)}>Отмена</button>
+              <button className="btn btn--danger" onClick={confirmAndLogout}>Выйти</button>
+            </>
+          }
+        >
+          <div className="text-muted" style={{ fontSize: 14 }}>
+            Вы действительно хотите выйти из аккаунта? Для возврата нужно будет ввести логин и пароль.
+          </div>
+        </Modal>
       </div>
     </>
   );

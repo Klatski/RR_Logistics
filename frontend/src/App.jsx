@@ -22,6 +22,7 @@ import DriversAdminScreen from './screens/admin/DriversAdminScreen.jsx';
 import TripsAdminScreen from './screens/admin/TripsAdminScreen.jsx';
 import RefuelsAdminScreen from './screens/admin/RefuelsAdminScreen.jsx';
 import CarwashesAdminScreen from './screens/admin/CarwashesAdminScreen.jsx';
+import ProfileAdminScreen from './screens/admin/ProfileAdminScreen.jsx';
 
 import { syncPendingActions } from './lib/offline.js';
 
@@ -89,6 +90,7 @@ export default function App() {
             <Route path="/admin/trips" element={<TripsAdminScreen />} />
             <Route path="/admin/refuels" element={<RefuelsAdminScreen />} />
             <Route path="/admin/carwashes" element={<CarwashesAdminScreen />} />
+            <Route path="/admin/profile" element={<ProfileAdminScreen />} />
           </Route>
 
           <Route path="*" element={<RootRedirect />} />

@@ -550,6 +550,14 @@ p { margin: 0 0 12px; }
   color: var(--text-muted);
   text-decoration: none;
   font-weight: 500;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
 }
 .sidebar__item:hover { background: var(--bg); color: var(--text); }
 .sidebar__item.active { background: var(--accent-soft); color: var(--accent); }
