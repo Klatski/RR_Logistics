@@ -25,6 +25,10 @@ export default function EndTripScreen() {
   const [liters, setLiters] = useState('');
   const [fuelPhoto, setFuelPhoto] = useState(null);
   const [receiptPhoto, setReceiptPhoto] = useState(null);
+  const [hasCarwash, setHasCarwash] = useState(false);
+  const [washAmount, setWashAmount] = useState('');
+  const [washCarPhoto, setWashCarPhoto] = useState(null);
+  const [washReceiptPhoto, setWashReceiptPhoto] = useState(null);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -78,6 +82,11 @@ export default function EndTripScreen() {
         if (fuelPhoto) fuelUp = await uploadOrLocal(fuelPhoto.blob, 'fuel.jpg');
         if (receiptPhoto) receiptUp = await uploadOrLocal(receiptPhoto.blob, 'receipt.jpg');
       }
+      let washCarUp = null, washReceiptUp = null;
+      if (hasCarwash) {
+        if (washCarPhoto) washCarUp = await uploadOrLocal(washCarPhoto.blob, 'wash-car.jpg');
+        if (washReceiptPhoto) washReceiptUp = await uploadOrLocal(washReceiptPhoto.blob, 'wash-receipt.jpg');
+      }
       const body = {
         odometer_end: Number(odometer),
         end_photo_url: endUp.url,
@@ -90,10 +99,18 @@ export default function EndTripScreen() {
               receipt_photo_url: receiptUp ? receiptUp.url : null,
             }
           : null,
+        carwash: hasCarwash
+          ? {
+              amount: washAmount ? Number(washAmount) : null,
+              car_photo_url: washCarUp ? washCarUp.url : null,
+              receipt_photo_url: washReceiptUp ? washReceiptUp.url : null,
+            }
+          : null,
       };
 
       const hasPending =
-        endUp.pending || (fuelUp && fuelUp.pending) || (receiptUp && receiptUp.pending);
+        endUp.pending || (fuelUp && fuelUp.pending) || (receiptUp && receiptUp.pending) ||
+        (washCarUp && washCarUp.pending) || (washReceiptUp && washReceiptUp.pending);
 
       if (!navigator.onLine || hasPending) {
         await savePendingAction(uuid(), {
@@ -102,6 +119,7 @@ export default function EndTripScreen() {
           body,
           photoFields: ['end_photo_url'],
           refuelPhotoFields: ['fuel_photo_url', 'receipt_photo_url'],
+          carwashPhotoFields: ['car_photo_url', 'receipt_photo_url'],
         });
         toast.show('Поездка сохранена локально и отправится при появлении сети', 'info');
         navigate('/', { replace: true });
@@ -204,6 +222,37 @@ export default function EndTripScreen() {
                   placeholder="0"
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        <div className="section-title" style={{ marginTop: 8 }}>Автомойка</div>
+        <label className="toggle">
+          <input type="checkbox" checked={hasCarwash} onChange={(e) => setHasCarwash(e.target.checked)} />
+          <span className="toggle__track" />
+          <span>Была мойка?</span>
+        </label>
+
+        {hasCarwash && (
+          <div className="stack" style={{ marginTop: 4 }}>
+            <div className="field">
+              <label>Фото машины после мойки</label>
+              <PhotoCapture value={washCarPhoto} onChange={setWashCarPhoto} label="Сфотографировать машину" />
+            </div>
+            <div className="field">
+              <label>Фото чека автомойки</label>
+              <PhotoCapture value={washReceiptPhoto} onChange={setWashReceiptPhoto} label="Сфотографировать чек" />
+            </div>
+            <div className="field">
+              <label>Сумма, ₸</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                className="input"
+                value={washAmount}
+                onChange={(e) => setWashAmount(e.target.value)}
+                placeholder="0"
+              />
             </div>
           </div>
         )}

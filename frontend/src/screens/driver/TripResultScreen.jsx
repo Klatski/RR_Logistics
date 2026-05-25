@@ -64,6 +64,20 @@ export default function TripResultScreen() {
             )}
           </>
         )}
+        {trip.carwash && (
+          <>
+            <div className="summary-row">
+              <span className="summary-row__label">Автомойка</span>
+              <span className="summary-row__value text-success">Да</span>
+            </div>
+            {trip.carwash.amount != null && (
+              <div className="summary-row">
+                <span className="summary-row__label">Сумма мойки</span>
+                <span className="summary-row__value">{formatMoney(trip.carwash.amount)}</span>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <button className="btn btn--full btn--lg" onClick={() => navigate('/', { replace: true })}>

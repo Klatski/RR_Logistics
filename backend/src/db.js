@@ -70,10 +70,20 @@ export async function initDb() {
       created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
+    CREATE TABLE IF NOT EXISTS carwashes (
+      id               SERIAL PRIMARY KEY,
+      trip_id          INTEGER NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+      amount           REAL,
+      car_photo_url    TEXT,
+      receipt_photo_url TEXT,
+      created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
     CREATE INDEX IF NOT EXISTS idx_trips_driver ON trips(driver_id);
     CREATE INDEX IF NOT EXISTS idx_trips_car    ON trips(car_id);
     CREATE INDEX IF NOT EXISTS idx_trips_status ON trips(status);
     CREATE INDEX IF NOT EXISTS idx_refuels_trip ON refuels(trip_id);
+    CREATE INDEX IF NOT EXISTS idx_carwashes_trip ON carwashes(trip_id);
   `);
 
   // Seed: admin

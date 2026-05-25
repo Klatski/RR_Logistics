@@ -7,6 +7,7 @@ import carsRoutes from './routes/cars.js';
 import driversRoutes from './routes/drivers.js';
 import tripsRoutes from './routes/trips.js';
 import refuelsRoutes from './routes/refuels.js';
+import carwashesRoutes from './routes/carwashes.js';
 import uploadsRoutes from './routes/uploads.js';
 import dashboardRoutes from './routes/dashboard.js';
 
@@ -25,6 +26,7 @@ app.use('/api/cars',      carsRoutes);
 app.use('/api/drivers',   driversRoutes);
 app.use('/api/trips',     tripsRoutes);
 app.use('/api/refuels',   refuelsRoutes);
+app.use('/api/carwashes', carwashesRoutes);
 app.use('/api/uploads',   uploadsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 

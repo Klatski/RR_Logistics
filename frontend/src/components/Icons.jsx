@@ -51,6 +51,8 @@ export function Icon({ name, size = 20, ...rest }) {
       return <svg {...props}><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/></svg>;
     case 'fuel':
       return <svg {...props}><path d="M5 21V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v16"/><path d="M3 21h12"/><path d="M13 9h3l2 2v7a2 2 0 0 1-2-2v-3"/></svg>;
+    case 'wash':
+      return <svg {...props}><path d="M4 13l1.2-4.5A2 2 0 0 1 7.2 7h9.6a2 2 0 0 1 2 1.5L20 13"/><path d="M3 13h18v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4z"/><path d="M7 21v-3M12 21v-3M17 21v-3"/></svg>;
     case 'chart':
       return <svg {...props}><path d="M4 19V5"/><path d="M9 19V9"/><path d="M14 19v-7"/><path d="M19 19V8"/></svg>;
     case 'menu':

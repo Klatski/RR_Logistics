@@ -19,11 +19,16 @@ async function withRelations(trip) {
     'SELECT * FROM refuels WHERE trip_id = $1 ORDER BY id DESC LIMIT 1',
     [trip.id]
   );
+  const { rows: carwashRows } = await db.query(
+    'SELECT * FROM carwashes WHERE trip_id = $1 ORDER BY id DESC LIMIT 1',
+    [trip.id]
+  );
   return {
     ...trip,
     driver: driverRows[0] || null,
     car: carRows[0] || null,
     refuel: refuelRows[0] || null,
+    carwash: carwashRows[0] || null,
   };
 }
 
@@ -212,7 +217,7 @@ router.post('/:id/finish', async (req, res) => {
       return res.status(409).json({ error: 'Поездка уже завершена' });
     }
 
-    const { odometer_end, end_photo_url, comment, refuel } = req.body || {};
+    const { odometer_end, end_photo_url, comment, refuel, carwash } = req.body || {};
     if (odometer_end == null || !end_photo_url) {
       return res.status(400).json({ error: 'Одометр и фото обязательны' });
     }
@@ -241,6 +246,18 @@ router.post('/:id/finish', async (req, res) => {
           refuel.amount  ? Number(refuel.amount)  : null,
           refuel.fuel_photo_url    || null,
           refuel.receipt_photo_url || null,
+        ]
+      );
+    }
+
+    if (carwash && (carwash.amount || carwash.car_photo_url || carwash.receipt_photo_url)) {
+      await client.query(
+        'INSERT INTO carwashes (trip_id, amount, car_photo_url, receipt_photo_url) VALUES ($1,$2,$3,$4)',
+        [
+          trip.id,
+          carwash.amount ? Number(carwash.amount) : null,
+          carwash.car_photo_url    || null,
+          carwash.receipt_photo_url || null,
         ]
       );
     }

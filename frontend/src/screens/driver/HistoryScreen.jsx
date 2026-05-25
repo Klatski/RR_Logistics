@@ -93,6 +93,12 @@ export default function HistoryScreen() {
                         <div className="text-success" style={{ fontWeight: 600 }}>Да</div>
                       </div>
                     )}
+                    {t.carwash && (
+                      <div>
+                        <div className="text-muted" style={{ fontSize: 12 }}>Мойка</div>
+                        <div className="text-success" style={{ fontWeight: 600 }}>Да</div>
+                      </div>
+                    )}
                   </div>
                 </Link>
               ))}

@@ -80,6 +80,16 @@ export async function syncPendingActions() {
           }
         }
       }
+      if (action.carwashPhotoFields) {
+        for (const field of action.carwashPhotoFields) {
+          const localRef = body.carwash && body.carwash[field];
+          if (typeof localRef === 'string' && localRef.startsWith('local:')) {
+            const localId = localRef.slice('local:'.length);
+            if (uploaded[localId]) body.carwash[field] = uploaded[localId];
+            else throw new Error('Фото мойки ещё не загружено');
+          }
+        }
+      }
       await fetch(`/api${action.path}`, {
         method: action.method,
         headers: {

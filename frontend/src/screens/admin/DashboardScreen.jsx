@@ -57,6 +57,8 @@ export default function DashboardScreen() {
     : preset === 'prev' ? 'Пробег (пр. месяц)' : 'Пробег за период';
   const fuelLabel = preset === 'this' ? 'Топливо за месяц'
     : preset === 'prev' ? 'Топливо (пр. месяц)' : 'Топливо за период';
+  const washLabel = preset === 'this' ? 'Мойка за месяц'
+    : preset === 'prev' ? 'Мойка (пр. месяц)' : 'Мойка за период';
 
   return (
     <div className="stack" style={{ gap: 20 }}>
@@ -135,6 +137,11 @@ export default function DashboardScreen() {
               <div className="metric-card__icon"><Icon name="fuel" size={20} /></div>
               <div className="metric-card__label">{fuelLabel}</div>
               <div className="metric-card__value">{formatMoney(data.metrics.monthFuel)}</div>
+            </div>
+            <div className="card metric-card">
+              <div className="metric-card__icon"><Icon name="wash" size={20} /></div>
+              <div className="metric-card__label">{washLabel}</div>
+              <div className="metric-card__value">{formatMoney(data.metrics.monthCarwash)}</div>
             </div>
           </div>
 

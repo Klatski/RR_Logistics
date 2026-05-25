@@ -174,6 +174,7 @@ export default function TripsAdminScreen() {
                   <th>Одометр</th>
                   <th>Пробег</th>
                   <th>Заправка</th>
+                  <th>Мойка</th>
                   <th>Статус</th>
                   <th></th>
                 </tr>
@@ -187,6 +188,7 @@ export default function TripsAdminScreen() {
                     <td className="mono">{t.odometer_start} → {t.odometer_end ?? '...'}</td>
                     <td className="mono">{t.distance != null ? formatKm(t.distance) : '—'}</td>
                     <td>{t.refuel ? <span className="text-success">Да</span> : <span className="text-muted">—</span>}</td>
+                    <td>{t.carwash ? <span className="text-success">Да</span> : <span className="text-muted">—</span>}</td>
                     <td><span className={`badge badge--${t.status}`}>{statusLabel(t.status)}</span></td>
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
@@ -253,6 +255,24 @@ export default function TripsAdminScreen() {
                   {detail.refuel.receipt_photo_url && !detail.refuel.receipt_photo_url.startsWith('local:') && (
                     <a href={detail.refuel.receipt_photo_url} target="_blank" rel="noreferrer" style={{ flex: 1 }}>
                       <img src={detail.refuel.receipt_photo_url} alt="Чек" style={{ width: '100%', borderRadius: 8 }} />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+            {detail.carwash && (
+              <div className="card">
+                <h3>Автомойка</h3>
+                {detail.carwash.amount != null && <div className="summary-row"><span className="summary-row__label">Сумма</span><span className="summary-row__value">{formatMoney(detail.carwash.amount)}</span></div>}
+                <div className="row" style={{ marginTop: 10, gap: 8 }}>
+                  {detail.carwash.car_photo_url && !detail.carwash.car_photo_url.startsWith('local:') && (
+                    <a href={detail.carwash.car_photo_url} target="_blank" rel="noreferrer" style={{ flex: 1 }}>
+                      <img src={detail.carwash.car_photo_url} alt="Машина" style={{ width: '100%', borderRadius: 8 }} />
+                    </a>
+                  )}
+                  {detail.carwash.receipt_photo_url && !detail.carwash.receipt_photo_url.startsWith('local:') && (
+                    <a href={detail.carwash.receipt_photo_url} target="_blank" rel="noreferrer" style={{ flex: 1 }}>
+                      <img src={detail.carwash.receipt_photo_url} alt="Чек" style={{ width: '100%', borderRadius: 8 }} />
                     </a>
                   )}
                 </div>

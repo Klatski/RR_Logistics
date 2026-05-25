@@ -16,8 +16,10 @@ router.get('/', async (req, res) => {
 
     const dParams = [];
     const fParams = [];
+    const wParams = [];
     let distanceSql = "SELECT COALESCE(SUM(distance),0) AS d FROM trips WHERE status = 'completed'";
     let fuelSql     = 'SELECT COALESCE(SUM(amount),0) AS amount FROM refuels WHERE 1=1';
+    let washSql     = 'SELECT COALESCE(SUM(amount),0) AS amount FROM carwashes WHERE 1=1';
 
     if (from || to) {
       if (from) {
@@ -25,20 +27,26 @@ router.get('/', async (req, res) => {
         distanceSql += ` AND end_time::date >= $${dParams.length}::date`;
         fParams.push(from);
         fuelSql     += ` AND created_at::date >= $${fParams.length}::date`;
+        wParams.push(from);
+        washSql     += ` AND created_at::date >= $${wParams.length}::date`;
       }
       if (to) {
         dParams.push(to);
         distanceSql += ` AND end_time::date <= $${dParams.length}::date`;
         fParams.push(to);
         fuelSql     += ` AND created_at::date <= $${fParams.length}::date`;
+        wParams.push(to);
+        washSql     += ` AND created_at::date <= $${wParams.length}::date`;
       }
     } else {
       distanceSql += " AND end_time >= date_trunc('month', NOW())";
       fuelSql     += " AND created_at >= date_trunc('month', NOW())";
+      washSql     += " AND created_at >= date_trunc('month', NOW())";
     }
 
     const { rows: distRows } = await db.query(distanceSql, dParams);
     const { rows: fuelRows } = await db.query(fuelSql, fParams);
+    const { rows: washRows } = await db.query(washSql, wParams);
 
     const { rows: lastTrips } = await db.query(`
       SELECT t.id, t.start_time, t.end_time, t.distance, t.status,
@@ -57,6 +65,7 @@ router.get('/', async (req, res) => {
         activeTrips:   parseInt(activeRows[0].c),
         monthDistance: parseInt(distRows[0].d),
         monthFuel:     parseFloat(fuelRows[0].amount),
+        monthCarwash:  parseFloat(washRows[0].amount),
       },
       lastTrips,
     });

@@ -103,6 +103,27 @@ export default function TripDetailsScreen() {
           </div>
         </div>
       )}
+
+      {trip.carwash && (
+        <div className="card">
+          <h3>Автомойка</h3>
+          {trip.carwash.amount != null && (
+            <div className="summary-row"><span className="summary-row__label">Сумма</span><span className="summary-row__value">{formatMoney(trip.carwash.amount)}</span></div>
+          )}
+          <div className="row" style={{ marginTop: 12, gap: 10 }}>
+            {trip.carwash.car_photo_url && !trip.carwash.car_photo_url.startsWith('local:') && (
+              <a href={trip.carwash.car_photo_url} target="_blank" rel="noreferrer" style={{ flex: 1 }}>
+                <img src={trip.carwash.car_photo_url} alt="Машина" style={{ width: '100%', borderRadius: 8 }} />
+              </a>
+            )}
+            {trip.carwash.receipt_photo_url && !trip.carwash.receipt_photo_url.startsWith('local:') && (
+              <a href={trip.carwash.receipt_photo_url} target="_blank" rel="noreferrer" style={{ flex: 1 }}>
+                <img src={trip.carwash.receipt_photo_url} alt="Чек" style={{ width: '100%', borderRadius: 8 }} />
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

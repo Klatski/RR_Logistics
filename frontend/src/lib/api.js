@@ -115,6 +115,16 @@ export const api = {
     update: (id, data) => request(`/refuels/${id}`, { method: 'PUT', body: data }),
   },
 
+  carwashes: {
+    list: (query = {}) => {
+      const qs = new URLSearchParams();
+      Object.entries(query).forEach(([k, v]) => v && qs.set(k, v));
+      const s = qs.toString();
+      return request(`/carwashes${s ? `?${s}` : ''}`);
+    },
+    update: (id, data) => request(`/carwashes/${id}`, { method: 'PUT', body: data }),
+  },
+
   dashboard: {
     get: (query = {}) => {
       const qs = new URLSearchParams();

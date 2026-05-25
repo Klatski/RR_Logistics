@@ -9,6 +9,7 @@ const NAV = [
   { to: '/admin/drivers', icon: 'users', label: 'Водители' },
   { to: '/admin/trips', icon: 'route', label: 'Поездки' },
   { to: '/admin/refuels', icon: 'fuel', label: 'Заправки' },
+  { to: '/admin/carwashes', icon: 'wash', label: 'Автомойки' },
 ];
 
 export default function AdminLayout() {
