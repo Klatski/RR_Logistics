@@ -5,12 +5,15 @@ import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '../auth.js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const BUCKET = process.env.SUPABASE_BUCKET || 'uploads';
 
-const BUCKET = 'uploads';
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  console.error('[upload] SUPABASE_URL или SUPABASE_SERVICE_KEY не заданы в окружении');
+}
+
+const supabase = createClient(SUPABASE_URL || '', SUPABASE_SERVICE_KEY || '');
 
 const router = Router();
 
@@ -28,6 +31,9 @@ const upload = multer({
 
 router.post('/', requireAuth, upload.single('photo'), async (req, res) => {
   try {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      return res.status(500).json({ error: 'Сервер не настроен: SUPABASE_URL/SUPABASE_SERVICE_KEY' });
+    }
     if (!req.file) return res.status(400).json({ error: 'Файл не получен' });
 
     const ext      = path.extname(req.file.originalname || '') || '.jpg';
@@ -41,13 +47,19 @@ router.post('/', requireAuth, upload.single('photo'), async (req, res) => {
       });
 
     if (error) {
-      console.error('[upload] Supabase error:', error.message);
-      return res.status(500).json({ error: 'Ошибка загрузки файла' });
+      console.error('[upload] Supabase error:', {
+        message: error.message,
+        statusCode: error.statusCode,
+        name: error.name,
+        bucket: BUCKET,
+      });
+      return res.status(500).json({ error: `Supabase: ${error.message}` });
     }
 
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(filename);
     res.json({ url: data.publicUrl });
   } catch (e) {
+    console.error('[upload] Неожиданная ошибка:', e);
     res.status(500).json({ error: e.message });
   }
 });

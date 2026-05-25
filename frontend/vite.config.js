@@ -6,6 +6,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const apiBase = env.VITE_API_URL || '';
 
+  const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const apiUrlPattern = apiBase
+    ? new RegExp(`(^\\/api\\/|^${escapeRegex(apiBase)}\\/?)`)
+    : /^\/api\//;
+
   return {
     plugins: [
       react(),
@@ -32,9 +37,8 @@ export default defineConfig(({ mode }) => {
           globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
           runtimeCaching: [
             {
-              urlPattern: ({ url }) =>
-                url.pathname.startsWith('/api/') ||
-                (apiBase && url.href.startsWith(apiBase)),
+              urlPattern: apiUrlPattern,
+              method: 'GET',
               handler: 'NetworkFirst',
               options: {
                 cacheName: 'api-cache',
