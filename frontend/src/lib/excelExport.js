@@ -265,9 +265,9 @@ function buildMonthSheet(wb, { year, monthIdx, cars, refuelsYear, washesYear, tr
   ws.getColumn(7).width = 7;
   ws.getColumn(8).width = 7;
   ws.getColumn(9).width = 13;
-  for (let i = dayStartCol; i <= dayEndCol; i++) ws.getColumn(i).width = 6;
-  ws.getColumn(totalCol).width = 12;
-  for (let i = calcStart; i <= lastCol; i++) ws.getColumn(i).width = 11;
+  for (let i = dayStartCol; i <= dayEndCol; i++) ws.getColumn(i).width = 14;
+  ws.getColumn(totalCol).width = 16;
+  for (let i = calcStart; i <= lastCol; i++) ws.getColumn(i).width = 15;
 
   titleRow(ws, 1, lastCol, `УЧЁТ ЗАПРАВКИ ГСМ И ПРОБЕГА  |  ${monthUp} ${year}  |  ${DEFAULTS.customer}  |  Поставщик: ${DEFAULTS.fuelSupplier}`);
 
@@ -522,11 +522,11 @@ function buildAllProjectsSheet(wb, { year, cars, monthlyTotals }) {
   ws.getColumn(2).width = 16;
   ws.getColumn(3).width = 12;
   ws.getColumn(4).width = 6;
-  for (let i = 0; i < monthCols; i++) ws.getColumn(fixedCols + 1 + i).width = 9;
-  ws.getColumn(fixedCols + monthCols + 1).width = 12;
-  ws.getColumn(fixedCols + monthCols + 2).width = 12;
-  ws.getColumn(fixedCols + monthCols + 3).width = 14;
-  ws.getColumn(fixedCols + monthCols + 4).width = 14;
+  for (let i = 0; i < monthCols; i++) ws.getColumn(fixedCols + 1 + i).width = 13;
+  ws.getColumn(fixedCols + monthCols + 1).width = 14;
+  ws.getColumn(fixedCols + monthCols + 2).width = 14;
+  ws.getColumn(fixedCols + monthCols + 3).width = 16;
+  ws.getColumn(fixedCols + monthCols + 4).width = 16;
 
   titleRow(ws, 1, lastCol, `СВОДНЫЙ ГОДОВОЙ ОТЧЁТ  |  ${DEFAULTS.customer}  |  ${year}`);
 
@@ -626,8 +626,8 @@ function buildScheduleSheet(wb, { year, monthIdx, drivers, cars, tripsYear, refu
 
   ws.getColumn(1).width = 4;
   ws.getColumn(2).width = 24;
-  for (let i = dayStartCol; i <= dayEndCol; i++) ws.getColumn(i).width = 5;
-  for (let i = tailStart; i <= driverLastCol; i++) ws.getColumn(i).width = 14;
+  for (let i = dayStartCol; i <= dayEndCol; i++) ws.getColumn(i).width = 12;
+  for (let i = tailStart; i <= driverLastCol; i++) ws.getColumn(i).width = 15;
 
   titleRow(ws, 1, lastCol, `ГРАФИК РАБОТЫ  |  ${monthName.toUpperCase()} ${year}  |  ${DEFAULTS.customer}`);
 
