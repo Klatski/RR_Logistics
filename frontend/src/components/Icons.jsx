@@ -65,6 +65,8 @@ export function Icon({ name, size = 20, ...rest }) {
       return <svg {...props}><path d="M4 12a8 8 0 0 1 13.5-5.8L20 8"/><path d="M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-13.5 5.8L4 16"/><path d="M4 20v-4h4"/></svg>;
     case 'filter':
       return <svg {...props}><path d="M3 6h18M7 12h10M11 18h2"/></svg>;
+    case 'download':
+      return <svg {...props}><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>;
     default:
       return null;
   }

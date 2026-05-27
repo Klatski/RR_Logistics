@@ -1,5 +1,5 @@
 import { get, set, del, keys } from 'idb-keyval';
-import { api } from './api.js';
+import { api, request } from './api.js';
 
 const PHOTO_PREFIX = 'photo:';
 const PENDING_PREFIX = 'pending:';
@@ -90,17 +90,24 @@ export async function syncPendingActions() {
           }
         }
       }
-      await fetch(`/api${action.path}`, {
-        method: action.method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('rr_token')}`,
-        },
-        body: JSON.stringify(body),
-      });
-      await removePendingAction(key);
+      try {
+        await request(action.path, { method: action.method, body });
+        await removePendingAction(key);
+      } catch (e) {
+        const status = e && typeof e.status === 'number' ? e.status : null;
+        // 2xx уже обработано выше. Удаляем только при постоянных клиентских ошибках
+        // (400/403/404/409 и т.п.). Сохраняем при 401 (может починиться после re-login),
+        // 5xx и сетевых сбоях (status=0).
+        if (status !== null && status >= 400 && status < 500 && status !== 401) {
+          console.warn('[offline] действие отклонено сервером, удаляем', key, e);
+          await removePendingAction(key);
+        } else {
+          console.warn('[offline] действие отложено до следующей синхронизации', key, e);
+        }
+      }
     } catch (e) {
-      console.warn('[offline] не удалось выполнить отложенное действие', key, e);
+      // Ошибка подготовки body (например, фото ещё не залилось) — оставляем в очереди
+      console.warn('[offline] подготовка действия не удалась', key, e);
     }
   }
 }

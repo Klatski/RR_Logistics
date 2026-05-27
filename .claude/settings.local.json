@@ -19,7 +19,20 @@
       "Bash(curl -s -o /dev/null -w \"sw.js: %{http_code}\\\\n\" http://localhost:5174/sw.js)",
       "Bash(curl -s -o /dev/null -w \"icon-192: %{http_code}\\\\n\" http://localhost:5174/icons/icon-192.png)",
       "Bash(curl -s -o /dev/null -w \"icon-512: %{http_code}\\\\n\" http://localhost:5174/icons/icon-512.png)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(node --check backend/src/routes/trips.js)",
+      "Bash(node --check backend/src/routes/cars.js)",
+      "Bash(node -e \"const fs=require\\('fs'\\); console.log\\(fs.existsSync\\('node_modules/xlsx'\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); console.log\\(fs.readdirSync\\('node_modules'\\).filter\\(x=>x.includes\\('xlsx'\\)||x.includes\\('exceljs'\\)\\)\\)\")",
+      "Bash(cd D:\\\\IT\\\\RR_Logistics *)",
+      "Bash(pip show *)",
+      "Bash(python tmp_dump_xlsx.py)",
+      "Bash(set PYTHONIOENCODING=utf-8)",
+      "PowerShell($env:PYTHONIOENCODING='utf-8'; python tmp_dump_xlsx.py > tmp_dump.txt 2>&1; Get-Content tmp_dump.txt -TotalCount 5)",
+      "PowerShell(Out-File *)",
+      "Bash(node -e \"console.log\\(require\\('exceljs/package.json'\\).version\\)\")",
+      "Bash(npx vite *)",
+      "Bash(node tmp_test_export.mjs)"
     ]
   }
 }

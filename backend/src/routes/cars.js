@@ -100,12 +100,21 @@ router.put('/:id', requireAdmin, async (req, res) => {
 
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
-    const { rows } = await db.query(
-      "SELECT id FROM trips WHERE car_id = $1 AND status = 'active'",
+    const { rows: activeRows } = await db.query(
+      "SELECT 1 FROM trips WHERE car_id = $1 AND status = 'active' LIMIT 1",
       [req.params.id]
     );
-    if (rows.length > 0) {
+    if (activeRows.length > 0) {
       return res.status(409).json({ error: 'Нельзя удалить машину с активной поездкой' });
+    }
+    const { rows: anyRows } = await db.query(
+      'SELECT 1 FROM trips WHERE car_id = $1 LIMIT 1',
+      [req.params.id]
+    );
+    if (anyRows.length > 0) {
+      return res.status(409).json({
+        error: 'У машины есть поездки в истории — удаление сотрёт их вместе с заправками и мойками',
+      });
     }
     await db.query('DELETE FROM cars WHERE id = $1', [req.params.id]);
     res.json({ ok: true });

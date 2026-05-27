@@ -126,10 +126,30 @@ router.put('/:id', async (req, res) => {
     }
     const distance = newOdo - Number(trip.odometer_start);
 
-    await db.query(
-      'UPDATE trips SET odometer_end = $1, distance = $2, comment = $3 WHERE id = $4',
-      [newOdo, distance, comment !== undefined ? (comment || null) : trip.comment, trip.id]
-    );
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(
+        'UPDATE trips SET odometer_end = $1, distance = $2, comment = $3 WHERE id = $4',
+        [newOdo, distance, comment !== undefined ? (comment || null) : trip.comment, trip.id]
+      );
+      // Пересинхронизация одометра машины: максимум из всех известных показаний.
+      // Включает завершённые (odometer_end) и активные (odometer_start) поездки.
+      await client.query(
+        `UPDATE cars SET current_odometer = GREATEST(
+           COALESCE((SELECT MAX(odometer_end)   FROM trips WHERE car_id = $1 AND odometer_end IS NOT NULL), 0),
+           COALESCE((SELECT MAX(odometer_start) FROM trips WHERE car_id = $1), 0)
+         )
+         WHERE id = $1`,
+        [trip.car_id]
+      );
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
 
     const { rows: updated } = await db.query('SELECT * FROM trips WHERE id = $1', [trip.id]);
     res.json({ trip: await withRelations(updated[0]) });

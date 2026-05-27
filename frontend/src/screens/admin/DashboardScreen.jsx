@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Icon } from '../../components/Icons.jsx';
 import { api } from '../../lib/api.js';
 import { useToast } from '../../components/Toast.jsx';
+import { exportDashboardToExcel } from '../../lib/excelExport.js';
 import {
   formatKm, formatMoney, formatDate, statusLabel,
 } from '../../lib/format.js';
@@ -35,6 +36,7 @@ export default function DashboardScreen() {
   const [preset, setPreset] = useState('this');
   const [custom, setCustom] = useState({ from: '', to: '' });
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const getQuery = useCallback(() => {
     if (preset === 'this') return getMonthRange(0);
@@ -53,6 +55,19 @@ export default function DashboardScreen() {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleExport = useCallback(async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const { fname, monthsCount } = await exportDashboardToExcel(getQuery());
+      toast.success(`Готово: ${fname}${monthsCount > 1 ? ` (${monthsCount} мес.)` : ''}`);
+    } catch (e) {
+      toast.error(e.message || 'Не удалось сформировать Excel');
+    } finally {
+      setExporting(false);
+    }
+  }, [exporting, getQuery, toast]);
+
   const distanceLabel = preset === 'this' ? 'Пробег за месяц'
     : preset === 'prev' ? 'Пробег (пр. месяц)' : 'Пробег за период';
   const fuelLabel = preset === 'this' ? 'Топливо за месяц'
@@ -62,8 +77,26 @@ export default function DashboardScreen() {
 
   return (
     <div className="stack" style={{ gap: 20 }}>
-      <div className="page-head">
-        <h1>Дашборд</h1>
+      <div className="page-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <h1 style={{ marginBottom: 0 }}>Дашборд</h1>
+        <button
+          onClick={handleExport}
+          disabled={exporting || loading}
+          style={{
+            height: 38, padding: '0 14px', borderRadius: 'var(--radius-sm)',
+            background: exporting ? 'var(--bg)' : 'var(--accent)',
+            color: exporting ? 'var(--text-muted)' : '#fff',
+            border: '1px solid var(--accent)',
+            fontSize: 13, fontWeight: 600,
+            cursor: exporting || loading ? 'wait' : 'pointer',
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            opacity: loading ? 0.6 : 1,
+            transition: 'all .15s',
+          }}
+        >
+          <Icon name="download" size={15} />
+          {exporting ? 'Формируем…' : 'Экспортировать в Excel'}
+        </button>
       </div>
 
       {/* Фильтр периода */}
